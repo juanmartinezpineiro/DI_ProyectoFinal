@@ -1,0 +1,830 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>FormularioInicio &#8212; documentación de VideoClub Los Martínez - 1.0</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../_static/translations.js"></script>
+    <link rel="index" title="Índice" href="../genindex.html" />
+    <link rel="search" title="Búsqueda" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Código fuente para FormularioInicio</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">gi</span>
+<span class="kn">import</span> <span class="nn">sqlite3</span>
+<span class="kn">import</span> <span class="nn">InformeClientes</span>
+<span class="kn">import</span> <span class="nn">InformeFactura</span>
+
+<span class="n">gi</span><span class="o">.</span><span class="n">require_version</span><span class="p">(</span><span class="s1">&#39;Gtk&#39;</span><span class="p">,</span> <span class="s1">&#39;3.0&#39;</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">gi.repository</span> <span class="kn">import</span> <span class="n">Gtk</span>
+
+
+<span class="c1"># Creamos la clase inicial para iniciar las siguientes.</span>
+<div class="viewcode-block" id="FormularioInicio"><a class="viewcode-back" href="../videoclub.html#FormularioInicio.FormularioInicio">[documentos]</a><span class="k">class</span> <span class="nc">FormularioInicio</span><span class="p">(</span><span class="n">Gtk</span><span class="o">.</span><span class="n">Window</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Creamos la ventana con un tamaño y un borde para el resto de widgets.</span>
+        <span class="n">Gtk</span><span class="o">.</span><span class="n">Window</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Videoclub Los Martínez&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_default_size</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_border_width</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+        <span class="c1"># Creamos la caja donde colocamos todos los widgets.</span>
+        <span class="n">cajaExterior</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Box</span><span class="p">(</span><span class="n">orientation</span><span class="o">=</span><span class="n">Gtk</span><span class="o">.</span><span class="n">Orientation</span><span class="o">.</span><span class="n">VERTICAL</span><span class="p">,</span> <span class="n">spacing</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">cajaExterior</span><span class="p">)</span>
+
+        <span class="c1"># Creamos el frame para cada apartado.</span>
+        <span class="n">frame</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Frame</span><span class="p">()</span>
+        <span class="n">frame</span><span class="o">.</span><span class="n">set_shadow_type</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Creamos un grid para meter todas las operaciones que queramos.</span>
+        <span class="n">grid</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Grid</span><span class="p">()</span>
+        <span class="n">cajaExterior</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">grid</span><span class="p">)</span>
+        <span class="c1"># Label de la seleccion de formularios</span>
+        <span class="n">lblFormularios</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="s2">&quot;¿Que desea gestionar?&quot;</span><span class="p">,</span> <span class="n">xalign</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+        <span class="c1"># Una array para luego llenar el comboBox</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">lblFormularios</span><span class="p">)</span>
+        <span class="n">formularios</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Gestión Socios&quot;</span><span class="p">,</span> <span class="s2">&quot;Gestión Videoclub&quot;</span><span class="p">]</span>
+
+        <span class="n">cmbFormularios</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">ComboBoxText</span><span class="p">()</span>
+        <span class="n">cmbFormularios</span><span class="o">.</span><span class="n">set_entry_text_column</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="c1"># Con este for recorremos el array y llenamos el combo</span>
+        <span class="k">for</span> <span class="n">formulario</span> <span class="ow">in</span> <span class="n">formularios</span><span class="p">:</span>
+            <span class="n">cmbFormularios</span><span class="o">.</span><span class="n">append_text</span><span class="p">(</span><span class="n">formulario</span><span class="p">)</span>
+        <span class="n">cmbFormularios</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;changed&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_formulario_changed</span><span class="p">)</span>
+        <span class="c1"># Lo metemos dentro de grid con attach para dat la posicion.</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">attach_next_to</span><span class="p">(</span><span class="n">cmbFormularios</span><span class="p">,</span> <span class="n">lblFormularios</span><span class="p">,</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">PositionType</span><span class="o">.</span><span class="n">RIGHT</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Boton salir que cerrara la aplicacion.</span>
+        <span class="n">botonSalida</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Button</span><span class="o">.</span><span class="n">new_with_label</span><span class="p">(</span><span class="s2">&quot;Salir&quot;</span><span class="p">)</span>
+        <span class="n">botonSalida</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s1">&#39;clicked&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_click_salida</span><span class="p">)</span>
+        <span class="n">cajaExterior</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">botonSalida</span><span class="p">)</span>
+
+        <span class="c1"># Mostramos la clase entera y siguientes.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;destroy&quot;</span><span class="p">,</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">main_quit</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">show_all</span><span class="p">()</span>
+
+    <span class="c1"># Evento del boton salir que al clicar cierre la app.</span>
+<div class="viewcode-block" id="FormularioInicio.on_click_salida"><a class="viewcode-back" href="../videoclub.html#FormularioInicio.FormularioInicio.on_click_salida">[documentos]</a>    <span class="k">def</span> <span class="nf">on_click_salida</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">botonSalida</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Cierra la aplicacion.</span>
+<span class="sd">        :param botonSalida:</span>
+<span class="sd">        :return: nothing</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Saliendo...&quot;</span><span class="p">)</span>
+        <span class="n">Gtk</span><span class="o">.</span><span class="n">main_quit</span><span class="p">()</span></div>
+
+    <span class="c1"># Evento de la selecion del formulario para que dependiendo del selecionado se abra.</span>
+<div class="viewcode-block" id="FormularioInicio.on_formulario_changed"><a class="viewcode-back" href="../videoclub.html#FormularioInicio.FormularioInicio.on_formulario_changed">[documentos]</a>    <span class="k">def</span> <span class="nf">on_formulario_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">combo</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Abre el formulario que tengas selecionado.</span>
+<span class="sd">        :param combo:</span>
+<span class="sd">        :return: nothing</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">combo</span><span class="o">.</span><span class="n">get_active_text</span><span class="p">()</span>
+        <span class="c1"># Creamos dos variables para luego comparar cual es cual.</span>
+        <span class="n">opcion1</span> <span class="o">=</span> <span class="s2">&quot;Gestión Socios&quot;</span>
+        <span class="n">opcion2</span> <span class="o">=</span> <span class="s2">&quot;Gestión Videoclub&quot;</span>
+        <span class="c1"># Un if para saber si es la opcion uno, es decir, gestion clientes o gestion servicios.</span>
+        <span class="k">if</span> <span class="n">text</span> <span class="o">==</span> <span class="n">opcion1</span><span class="p">:</span>
+            <span class="c1"># Aqui dentro llamamos a la clase que corresponda.</span>
+            <span class="n">cli</span> <span class="o">=</span> <span class="n">GestionCliente</span><span class="p">()</span>
+            <span class="n">cli</span><span class="o">.</span><span class="n">show_all</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">text</span> <span class="o">==</span> <span class="n">opcion2</span><span class="p">:</span>
+            <span class="n">serv</span> <span class="o">=</span> <span class="n">GestionServProd</span><span class="p">()</span>
+            <span class="n">serv</span><span class="o">.</span><span class="n">show_all</span><span class="p">()</span></div></div>
+
+
+<span class="c1"># Clase gestion cliente.</span>
+<div class="viewcode-block" id="GestionCliente"><a class="viewcode-back" href="../videoclub.html#FormularioInicio.GestionCliente">[documentos]</a><span class="k">class</span> <span class="nc">GestionCliente</span><span class="p">(</span><span class="n">Gtk</span><span class="o">.</span><span class="n">Window</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Ventana con el nombre Clientes y damos tamaño y borde ademas de la caja donde incluiremos todo.</span>
+        <span class="n">Gtk</span><span class="o">.</span><span class="n">Window</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Socios&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_default_size</span><span class="p">(</span><span class="mi">600</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_border_width</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+        <span class="n">cajaExterior2</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Box</span><span class="p">(</span><span class="n">orientation</span><span class="o">=</span><span class="n">Gtk</span><span class="o">.</span><span class="n">Orientation</span><span class="o">.</span><span class="n">VERTICAL</span><span class="p">,</span> <span class="n">spacing</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">cajaExterior2</span><span class="p">)</span>
+        <span class="c1"># Creamos dos frames, uno para insertar clientes nuevos y otro para borrar.</span>
+        <span class="n">frameInsertar</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Frame</span><span class="p">()</span>
+        <span class="n">frameInsertar</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s2">&quot;Registro Socio&quot;</span><span class="p">)</span>
+
+        <span class="n">frameBorrar</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Frame</span><span class="p">()</span>
+        <span class="n">frameBorrar</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s2">&quot;Borrar Socio&quot;</span><span class="p">)</span>
+        <span class="c1"># Los guardamos dentro de la caja exterior y creamos 2 grids para incluirlos en los frames respectivamente.</span>
+        <span class="n">cajaExterior2</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">frameInsertar</span><span class="p">)</span>
+        <span class="n">cajaExterior2</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">frameBorrar</span><span class="p">)</span>
+        <span class="n">grid</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Grid</span><span class="p">()</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">set_column_spacing</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">set_row_spacing</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid2</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Grid</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid2</span><span class="o">.</span><span class="n">set_column_spacing</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+        <span class="n">frameInsertar</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">grid</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid3</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Grid</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid3</span><span class="o">.</span><span class="n">set_column_spacing</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid3</span><span class="o">.</span><span class="n">set_row_spacing</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+        <span class="n">frameBorrar</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid3</span><span class="p">)</span>
+
+        <span class="c1"># Creamos un boton ver tabla que servira exactamente para eso, luego veremos el evento.</span>
+        <span class="n">verTabla</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;Consultar Socios&#39;</span><span class="p">)</span>
+        <span class="n">verTabla</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;clicked&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_listar_clicked</span><span class="p">)</span>
+
+        <span class="c1"># Declaramos los labels y sus entrys que se incluiran en el grid con attach para poner cada uno a la altura correspondiente</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lblDNI</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="s2">&quot;DNI: &quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">txtDNI</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Entry</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lblNombre</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="s2">&quot;Nombre: &quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">txtNombre</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Entry</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lblApellido</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="s2">&quot;Apellido: &quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">txtApellido</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Entry</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lblCodBarras</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="s2">&quot;Código de Barras: &quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">txtCodBarras</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Entry</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lblFormato</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="s2">&quot;Formato: &quot;</span><span class="p">)</span>
+        <span class="c1"># Creamos tambien un radioButton para elegir una de las tres opciones correspondientes.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">botonDVD</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">RadioButton</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;DVD&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">botonBluRay</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">RadioButton</span><span class="o">.</span><span class="n">new_from_widget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">botonDVD</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">botonBluRay</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s2">&quot;BluRay&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">botonBluRay</span><span class="o">.</span><span class="n">set_active</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">botonVideojuego</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">RadioButton</span><span class="o">.</span><span class="n">new_from_widget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">botonDVD</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">botonVideojuego</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s2">&quot;Videojuego&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">botonVideojuego</span><span class="o">.</span><span class="n">set_active</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lblTitulo</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="s2">&quot;Titulo: &quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">txtTitulo</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Entry</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lblTelefono</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="s2">&quot;Telefono: &quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">txtTelefono</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Entry</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lblAño</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="s2">&quot;Año: &quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">txtAño</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Entry</span><span class="p">()</span>
+
+        <span class="c1"># Tambien metemos el boton insertar que recogera todos los datos que hemos introducido</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">insertar</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;Insertar Socio&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">insertar</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;clicked&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_insertar_clicked</span><span class="p">)</span>
+
+        <span class="c1"># Este es el apartado de borrar socios, donde lo haremos por su dni.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lblBorrar</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="s2">&quot;DNI: &quot;</span><span class="p">)</span>
+        <span class="c1"># tenemos un combobox que llenamos con los dni que hay para no tener que meterlo a mano.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cbDNI</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">ComboBoxText</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cbDNI</span><span class="o">.</span><span class="n">set_entry_text_column</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="c1"># Llamada a un evento para listar los dni</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dni_cliente</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">borrar</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;Borrar Socio&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">borrar</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;clicked&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_borrar_clicked</span><span class="p">)</span>
+        <span class="c1"># El grid2 metemos los radiobuttons que luego meteremos en el grid1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid2</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">botonDVD</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid2</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">botonBluRay</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid2</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">botonVideojuego</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid3</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lblBorrar</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid3</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cbDNI</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid3</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">borrar</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lblDNI</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">txtDNI</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lblCodBarras</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">txtCodBarras</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lblNombre</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">txtNombre</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lblApellido</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">txtApellido</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lblFormato</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lblTitulo</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">txtTitulo</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lblTelefono</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">txtTelefono</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lblAño</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">txtAño</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">insertar</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">cajaExterior2</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">verTabla</span><span class="p">)</span>
+
+    <span class="c1"># Evento que lista los dni y llena el combobox.</span>
+<div class="viewcode-block" id="GestionCliente.dni_cliente"><a class="viewcode-back" href="../videoclub.html#FormularioInicio.GestionCliente.dni_cliente">[documentos]</a>    <span class="k">def</span> <span class="nf">dni_cliente</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Lista los clientes en el combobox.</span>
+<span class="sd">        :return: nothing</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Este codigo lo utilizo para cuando se borre algun socio poder actulizar los dni</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cbDNI</span><span class="o">.</span><span class="n">remove_all</span><span class="p">()</span>
+        <span class="c1"># Conectamos a la base con sqlite3 connect y guardamos en un cursor que luego ejecutaremos un select.</span>
+        <span class="n">tiendaC</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;VideoclubDB.dat&quot;</span><span class="p">)</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="n">tiendaC</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+
+            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select DNI from Socios&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">rexistro</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cbDNI</span><span class="o">.</span><span class="n">append_text</span><span class="p">(</span><span class="n">rexistro</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">tiendaC</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+    <span class="c1"># Evento que inserta todos los datos, guarda cada dato de los entry en una variable que luego seran introducidos en la base.</span>
+<div class="viewcode-block" id="GestionCliente.on_insertar_clicked"><a class="viewcode-back" href="../videoclub.html#FormularioInicio.GestionCliente.on_insertar_clicked">[documentos]</a>    <span class="k">def</span> <span class="nf">on_insertar_clicked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">btn</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Recoge en unas variables los entrys y los inserta en la base de datos.</span>
+<span class="sd">        :param btn:</span>
+<span class="sd">        :return: nothing</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">DNI</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">txtDNI</span><span class="o">.</span><span class="n">get_text</span><span class="p">()</span>
+        <span class="n">Nombre</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">txtNombre</span><span class="o">.</span><span class="n">get_text</span><span class="p">()</span>
+        <span class="n">Apellido</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">txtApellido</span><span class="o">.</span><span class="n">get_text</span><span class="p">()</span>
+        <span class="n">CodBarras</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">txtCodBarras</span><span class="o">.</span><span class="n">get_text</span><span class="p">()</span>
+        <span class="n">Titulo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">txtTitulo</span><span class="o">.</span><span class="n">get_text</span><span class="p">()</span>
+        <span class="n">Telefono</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">txtTelefono</span><span class="o">.</span><span class="n">get_text</span><span class="p">()</span>
+        <span class="n">Año</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">txtAño</span><span class="o">.</span><span class="n">get_text</span><span class="p">()</span>
+
+        <span class="c1"># Un if para saber que radiobutton esta selecionado y guardamos en una variable respectivamente.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">botonDVD</span><span class="o">.</span><span class="n">get_active</span><span class="p">():</span>
+            <span class="n">formato</span> <span class="o">=</span> <span class="s2">&quot;DVD&quot;</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">botonBluRay</span><span class="o">.</span><span class="n">get_active</span><span class="p">():</span>
+            <span class="n">formato</span> <span class="o">=</span> <span class="s2">&quot;BluRay&quot;</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">botonVideojuego</span><span class="o">.</span><span class="n">get_active</span><span class="p">():</span>
+            <span class="n">formato</span> <span class="o">=</span> <span class="s2">&quot;Videojuego&quot;</span>
+
+        <span class="c1">#</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">txtDNI</span><span class="o">.</span><span class="n">set_text</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">txtNombre</span><span class="o">.</span><span class="n">set_text</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">txtApellido</span><span class="o">.</span><span class="n">set_text</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">txtTitulo</span><span class="o">.</span><span class="n">set_text</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">txtCodBarras</span><span class="o">.</span><span class="n">set_text</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">txtTelefono</span><span class="o">.</span><span class="n">set_text</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">txtAño</span><span class="o">.</span><span class="n">set_text</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="n">tienda</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;VideoclubDB.dat&quot;</span><span class="p">)</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="n">tienda</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">sql</span> <span class="o">=</span> <span class="s2">&quot;INSERT INTO Socios (DNI, Nombre, Apellido, Formato, Titulo, Telefono, CodBarras, Año) VALUES (?, ?, ?, ?, ?, ?, ?, ?)&quot;</span>
+            <span class="n">parametros</span> <span class="o">=</span> <span class="p">(</span><span class="n">DNI</span><span class="p">,</span> <span class="n">Nombre</span><span class="p">,</span> <span class="n">Apellido</span><span class="p">,</span> <span class="n">formato</span><span class="p">,</span> <span class="n">Titulo</span><span class="p">,</span> <span class="n">Telefono</span><span class="p">,</span> <span class="n">CodBarras</span><span class="p">,</span> <span class="n">Año</span><span class="p">)</span>
+
+            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">parametros</span><span class="p">)</span>
+            <span class="n">tienda</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Insercion completada con exito!&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dni_cliente</span><span class="p">()</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">tienda</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="GestionCliente.on_borrar_clicked"><a class="viewcode-back" href="../videoclub.html#FormularioInicio.GestionCliente.on_borrar_clicked">[documentos]</a>    <span class="k">def</span> <span class="nf">on_borrar_clicked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">btn2</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Borrar un socio de una base de datos a traves del dni que seleciona en el combobox</span>
+<span class="sd">        :param btn2:</span>
+<span class="sd">        :return: nothing</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">DNI</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cbDNI</span><span class="o">.</span><span class="n">get_active_text</span><span class="p">()</span>
+        <span class="n">tienda</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;VideoclubDB.dat&quot;</span><span class="p">)</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="n">tienda</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">sql</span> <span class="o">=</span> <span class="s2">&quot;DELETE FROM Socios WHERE DNI=&#39;&quot;</span> <span class="o">+</span> <span class="n">DNI</span> <span class="o">+</span> <span class="s2">&quot;&#39;&quot;</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span>
+            <span class="n">tienda</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Socio con DNI: &quot;</span> <span class="o">+</span> <span class="n">DNI</span> <span class="o">+</span> <span class="s2">&quot; ha sido eliminado&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dni_cliente</span><span class="p">()</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">tienda</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="GestionCliente.on_listar_clicked"><a class="viewcode-back" href="../videoclub.html#FormularioInicio.GestionCliente.on_listar_clicked">[documentos]</a>    <span class="k">def</span> <span class="nf">on_listar_clicked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verTabla</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Visualiza la clase donde vamos hacer la consulta y ver la base.</span>
+<span class="sd">        :param verTabla:</span>
+<span class="sd">        :return: nothing</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tbCli</span> <span class="o">=</span> <span class="n">TablaClientes</span><span class="p">()</span>
+        <span class="n">tbCli</span><span class="o">.</span><span class="n">show_all</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="TablaClientes"><a class="viewcode-back" href="../videoclub.html#FormularioInicio.TablaClientes">[documentos]</a><span class="k">class</span> <span class="nc">TablaClientes</span><span class="p">(</span><span class="n">Gtk</span><span class="o">.</span><span class="n">Window</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">Gtk</span><span class="o">.</span><span class="n">Window</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Listado Socios&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_default_size</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="mi">300</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_border_width</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Grid</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">set_column_spacing</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">set_row_spacing</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cajaVentana</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Box</span><span class="p">(</span><span class="n">spacing</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cajaVentana</span><span class="o">.</span><span class="n">set_orientation</span><span class="p">(</span><span class="n">Gtk</span><span class="o">.</span><span class="n">Orientation</span><span class="o">.</span><span class="n">VERTICAL</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cajaVentana</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cajaVentana</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">lblDNI</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="s2">&quot;DNI: &quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lsDNI</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">ComboBoxText</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lsDNI</span><span class="o">.</span><span class="n">set_entry_text_column</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btnConsultar</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="s2">&quot;Consultar&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btnConsultar</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;clicked&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_consulta_clicked</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btnMostrar</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="s2">&quot;Mostrar Todos&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btnMostrar</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;clicked&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_mostrar_click</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">btnInforme</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="s2">&quot;Crear Informe&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btnInforme</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;clicked&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_informe</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lblDNI</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lsDNI</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">btnConsultar</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">btnMostrar</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">btnInforme</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dni_cliente</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">columnas</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;DNI&quot;</span><span class="p">,</span> <span class="s2">&quot;Nombre&quot;</span><span class="p">,</span> <span class="s2">&quot;Apellidos&quot;</span><span class="p">,</span> <span class="s2">&quot;Formato&quot;</span><span class="p">,</span> <span class="s2">&quot;Titulo&quot;</span><span class="p">,</span> <span class="s2">&quot;Telefono&quot;</span><span class="p">,</span> <span class="s2">&quot;CodBarras&quot;</span><span class="p">,</span> <span class="s2">&quot;Año&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">modelo</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">ListStore</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">axenda</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vista</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">TreeView</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">modelo</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">columnas</span><span class="p">)):</span>
+            <span class="n">celda</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">CellRendererText</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">columna</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">TreeViewColumn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">columnas</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">celda</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">i</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">vista</span><span class="o">.</span><span class="n">append_column</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">columna</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cajaVentana</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vista</span><span class="p">)</span>
+
+<div class="viewcode-block" id="TablaClientes.on_informe"><a class="viewcode-back" href="../videoclub.html#FormularioInicio.TablaClientes.on_informe">[documentos]</a>    <span class="k">def</span> <span class="nf">on_informe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">btnIn</span><span class="p">):</span>
+        <span class="n">Videoclub</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;VideoclubDB.dat&quot;</span><span class="p">)</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="n">Videoclub</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from Socios where DNI=&#39;&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">lsDNI</span><span class="o">.</span><span class="n">get_active_text</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;&#39;&quot;</span><span class="p">)</span>
+        <span class="n">lista</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">elemento</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+            <span class="n">lista</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">elemento</span><span class="p">)</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">InformeClientes</span><span class="o">.</span><span class="n">informeCliente</span><span class="p">(</span><span class="n">lista</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TablaClientes.on_mostrar_click"><a class="viewcode-back" href="../videoclub.html#FormularioInicio.TablaClientes.on_mostrar_click">[documentos]</a>    <span class="k">def</span> <span class="nf">on_mostrar_click</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">btMostrar</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Muestra toda la tabla de la base de datos.</span>
+<span class="sd">        :param btMostrar:</span>
+<span class="sd">        :return: nothing</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">columnas</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="n">tiendaC</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;VideoclubDB.dat&quot;</span><span class="p">)</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="n">tiendaC</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from Socios&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">axenda</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">rexistro</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">axenda</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="p">[</span><span class="n">rexistro</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">rexistro</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">rexistro</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">rexistro</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">rexistro</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">rexistro</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span> <span class="n">rexistro</span><span class="p">[</span><span class="mi">6</span><span class="p">],</span>
+                     <span class="n">rexistro</span><span class="p">[</span><span class="mi">7</span><span class="p">]])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">modelo</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">elemento</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">axenda</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">modelo</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">elemento</span><span class="p">)</span>
+
+
+
+
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">tiendaC</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="TablaClientes.on_consulta_clicked"><a class="viewcode-back" href="../videoclub.html#FormularioInicio.TablaClientes.on_consulta_clicked">[documentos]</a>    <span class="k">def</span> <span class="nf">on_consulta_clicked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">btnConsu</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gracias al dni visualizamos en cliente que queramos.</span>
+<span class="sd">        :param btnConsu:</span>
+<span class="sd">        :return: nothing</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tiendaC</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;VideoclubDB.dat&quot;</span><span class="p">)</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="n">tiendaC</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from Socios WHERE DNI=&#39;&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">lsDNI</span><span class="o">.</span><span class="n">get_active_text</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;&#39;&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">axenda</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+            <span class="k">for</span> <span class="n">rexistro</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">axenda</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="p">[</span><span class="n">rexistro</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">rexistro</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">rexistro</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">rexistro</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">rexistro</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">rexistro</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span> <span class="n">rexistro</span><span class="p">[</span><span class="mi">6</span><span class="p">],</span>
+                     <span class="n">rexistro</span><span class="p">[</span><span class="mi">7</span><span class="p">]])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">modelo</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">elemento</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">axenda</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">modelo</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">elemento</span><span class="p">)</span>
+
+
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">tiendaC</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="TablaClientes.dni_cliente"><a class="viewcode-back" href="../videoclub.html#FormularioInicio.TablaClientes.dni_cliente">[documentos]</a>    <span class="k">def</span> <span class="nf">dni_cliente</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Lista los socios y los muestra en un combobox para realizar la consulta</span>
+<span class="sd">        :return: nothing</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tiendaC</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;VideoclubDB.dat&quot;</span><span class="p">)</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="n">tiendaC</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+
+            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select DNI from Socios&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">rexistro</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">lsDNI</span><span class="o">.</span><span class="n">append_text</span><span class="p">(</span><span class="n">rexistro</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">tiendaC</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="GestionServProd"><a class="viewcode-back" href="../videoclub.html#FormularioInicio.GestionServProd">[documentos]</a><span class="k">class</span> <span class="nc">GestionServProd</span><span class="p">(</span><span class="n">Gtk</span><span class="o">.</span><span class="n">Window</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">Gtk</span><span class="o">.</span><span class="n">Window</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Producto/Servicios&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_default_size</span><span class="p">(</span><span class="mi">600</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_border_width</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+        <span class="n">cajaExterior2</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Box</span><span class="p">(</span><span class="n">orientation</span><span class="o">=</span><span class="n">Gtk</span><span class="o">.</span><span class="n">Orientation</span><span class="o">.</span><span class="n">VERTICAL</span><span class="p">,</span> <span class="n">spacing</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">cajaExterior2</span><span class="p">)</span>
+        <span class="n">frameInsertar</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Frame</span><span class="p">()</span>
+        <span class="n">frameInsertar</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s2">&quot;Registro Producto&quot;</span><span class="p">)</span>
+
+        <span class="n">frameBorrar</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Frame</span><span class="p">()</span>
+        <span class="n">frameBorrar</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s2">&quot;Borrar Producto&quot;</span><span class="p">)</span>
+
+        <span class="n">cajaExterior2</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">frameInsertar</span><span class="p">)</span>
+        <span class="n">cajaExterior2</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">frameBorrar</span><span class="p">)</span>
+        <span class="n">grid</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Grid</span><span class="p">()</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">set_column_spacing</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">set_row_spacing</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+        <span class="n">frameInsertar</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">grid</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid3</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Grid</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid3</span><span class="o">.</span><span class="n">set_column_spacing</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid3</span><span class="o">.</span><span class="n">set_row_spacing</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+        <span class="n">frameBorrar</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid3</span><span class="p">)</span>
+
+        <span class="n">verTabla</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;Listar Servicios&#39;</span><span class="p">)</span>
+        <span class="n">verTabla</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;clicked&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_listar_clicked</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">lblCodBarras</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="s2">&quot;Codigo Barras: &quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">txtCodBarras</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Entry</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lblCodBarrasPeliculas</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="s2">&quot;Codigo Barras Peliculas: &quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cbCodBarras</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">ComboBoxText</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cbCodBarras</span><span class="o">.</span><span class="n">set_entry_text_column</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lblNombre</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="s2">&quot;Nombre: &quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">txtNombre</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Entry</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lblPrecio</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="s2">&quot;Precio: &quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">txtPrecio</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Entry</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lblTipo</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="s2">&quot;Tipo: &quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">txtTipo</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Entry</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lblProcedencia</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="s2">&quot;Procedencia: &quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">txtProcedencia</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Entry</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lblAñoPublicacion</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="s2">&quot;Año de publicacion: &quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">txtAñoPublicacion</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Entry</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">insertar</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;Insertar Producto&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">insertar</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;clicked&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_insertar_clicked</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">lblBorrar</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="s2">&quot;Codigo Barras: &quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cbBId</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">ComboBoxText</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cbBId</span><span class="o">.</span><span class="n">set_entry_text_column</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">matri_cliente</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id_producto</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">borrar</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;Borrar Producto&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">borrar</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;clicked&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_borrar_clicked</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid3</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lblBorrar</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid3</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cbBId</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid3</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">borrar</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lblCodBarras</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">txtCodBarras</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lblCodBarrasPeliculas</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cbCodBarras</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lblNombre</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">txtNombre</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lblPrecio</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">txtPrecio</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lblTipo</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">txtTipo</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lblProcedencia</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">txtProcedencia</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lblAñoPublicacion</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">txtAñoPublicacion</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">insertar</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">cajaExterior2</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">verTabla</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GestionServProd.matri_cliente"><a class="viewcode-back" href="../videoclub.html#FormularioInicio.GestionServProd.matri_cliente">[documentos]</a>    <span class="k">def</span> <span class="nf">matri_cliente</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Lista los codigo de barras y las mete en un combobox para que cada producto nuevo tenga que ser de un socio registrado.</span>
+<span class="sd">        :return: nothing</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tiendaC</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;VideoclubDB.dat&quot;</span><span class="p">)</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="n">tiendaC</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+
+            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select CodBarras from Socios&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">rexistro</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cbCodBarras</span><span class="o">.</span><span class="n">append_text</span><span class="p">(</span><span class="n">rexistro</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">tiendaC</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="GestionServProd.id_producto"><a class="viewcode-back" href="../videoclub.html#FormularioInicio.GestionServProd.id_producto">[documentos]</a>    <span class="k">def</span> <span class="nf">id_producto</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Lista los cod de barras (id) de los productos y los guarda en un combobox para borrar el producto</span>
+<span class="sd">        :return: nothing</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cbBId</span><span class="o">.</span><span class="n">remove_all</span><span class="p">()</span>
+        <span class="n">tiendaC</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;VideoclubDB.dat&quot;</span><span class="p">)</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="n">tiendaC</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+
+            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select CodBarras from Productos&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">rexistro</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cbBId</span><span class="o">.</span><span class="n">append_text</span><span class="p">(</span><span class="n">rexistro</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">tiendaC</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="GestionServProd.on_insertar_clicked"><a class="viewcode-back" href="../videoclub.html#FormularioInicio.GestionServProd.on_insertar_clicked">[documentos]</a>    <span class="k">def</span> <span class="nf">on_insertar_clicked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">btn</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Insertar producto, recoge todos los entry en variables para introducirlos en la base de datos</span>
+<span class="sd">        :param btn:</span>
+<span class="sd">        :return: nothing</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">CodBarras</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">txtCodBarras</span><span class="o">.</span><span class="n">get_text</span><span class="p">()</span>
+        <span class="n">CodBarrasPeliculas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cbCodBarras</span><span class="o">.</span><span class="n">get_active_text</span><span class="p">()</span>
+        <span class="n">Nombre</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">txtNombre</span><span class="o">.</span><span class="n">get_text</span><span class="p">()</span>
+        <span class="n">Precio</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">txtPrecio</span><span class="o">.</span><span class="n">get_text</span><span class="p">()</span>
+        <span class="n">Tipo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">txtTipo</span><span class="o">.</span><span class="n">get_text</span><span class="p">()</span>
+        <span class="n">Procedencia</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">txtProcedencia</span><span class="o">.</span><span class="n">get_text</span><span class="p">()</span>
+        <span class="n">AñoPublicacion</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">txtAñoPublicacion</span><span class="o">.</span><span class="n">get_text</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">txtCodBarras</span><span class="o">.</span><span class="n">set_text</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">txtNombre</span><span class="o">.</span><span class="n">set_text</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">txtPrecio</span><span class="o">.</span><span class="n">set_text</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">txtTipo</span><span class="o">.</span><span class="n">set_text</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">txtProcedencia</span><span class="o">.</span><span class="n">set_text</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">txtAñoPublicacion</span><span class="o">.</span><span class="n">set_text</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="n">tienda</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;VideoclubDB.dat&quot;</span><span class="p">)</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="n">tienda</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">sql</span> <span class="o">=</span> <span class="s2">&quot;INSERT INTO Productos (CodBarras, CodBarrasPeliculas, NombreProducto, Precio, Tipo, Procedencia, AñoPublicacion) VALUES (?, ?, ?, ?, ?, ?, ?)&quot;</span>
+            <span class="n">parametros</span> <span class="o">=</span> <span class="p">(</span><span class="n">CodBarras</span><span class="p">,</span> <span class="n">CodBarrasPeliculas</span><span class="p">,</span> <span class="n">Nombre</span><span class="p">,</span> <span class="n">Precio</span><span class="p">,</span> <span class="n">Tipo</span><span class="p">,</span> <span class="n">Procedencia</span><span class="p">,</span> <span class="n">AñoPublicacion</span><span class="p">)</span>
+
+            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">parametros</span><span class="p">)</span>
+            <span class="n">tienda</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Insercion completada con exito!&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">id_producto</span><span class="p">()</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">tienda</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="GestionServProd.on_borrar_clicked"><a class="viewcode-back" href="../videoclub.html#FormularioInicio.GestionServProd.on_borrar_clicked">[documentos]</a>    <span class="k">def</span> <span class="nf">on_borrar_clicked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">btn2</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Borrar producto a traves del combobox que contiene el id (codBarras).</span>
+<span class="sd">        :param btn2:</span>
+<span class="sd">        :return: nothing</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">CodBarras</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cbBId</span><span class="o">.</span><span class="n">get_active_text</span><span class="p">()</span>
+        <span class="n">tienda</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;VideoclubDB.dat&quot;</span><span class="p">)</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="n">tienda</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">sql</span> <span class="o">=</span> <span class="s2">&quot;DELETE FROM Productos WHERE CodBarras=&#39;&quot;</span> <span class="o">+</span> <span class="n">CodBarras</span> <span class="o">+</span> <span class="s2">&quot;&#39;&quot;</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span>
+            <span class="n">tienda</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Producto con CodBarras: &quot;</span> <span class="o">+</span> <span class="n">CodBarras</span> <span class="o">+</span> <span class="s2">&quot; ha sido eliminado&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">id_producto</span><span class="p">()</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">tienda</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="GestionServProd.on_listar_clicked"><a class="viewcode-back" href="../videoclub.html#FormularioInicio.GestionServProd.on_listar_clicked">[documentos]</a>    <span class="k">def</span> <span class="nf">on_listar_clicked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verTabla</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Lista la tabla servicios para poder consultar y motrar.</span>
+<span class="sd">        :param verTabla:</span>
+<span class="sd">        :return: nothing</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tbCli</span> <span class="o">=</span> <span class="n">TablaServicios</span><span class="p">()</span>
+        <span class="n">tbCli</span><span class="o">.</span><span class="n">show_all</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="TablaServicios"><a class="viewcode-back" href="../videoclub.html#FormularioInicio.TablaServicios">[documentos]</a><span class="k">class</span> <span class="nc">TablaServicios</span><span class="p">(</span><span class="n">Gtk</span><span class="o">.</span><span class="n">Window</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">Gtk</span><span class="o">.</span><span class="n">Window</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Listado Alquileres?&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_default_size</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="mi">300</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_border_width</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Grid</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">set_column_spacing</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">set_row_spacing</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cajaVentana</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Box</span><span class="p">(</span><span class="n">spacing</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cajaVentana</span><span class="o">.</span><span class="n">set_orientation</span><span class="p">(</span><span class="n">Gtk</span><span class="o">.</span><span class="n">Orientation</span><span class="o">.</span><span class="n">VERTICAL</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cajaVentana</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cajaVentana</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">lblCodBarrasPeliculas</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="s2">&quot;Pelicula Socio: &quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lsCodBarrasPeliculas</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">ComboBoxText</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lsCodBarrasPeliculas</span><span class="o">.</span><span class="n">set_entry_text_column</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btnConsultar</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="s2">&quot;Consultar&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btnConsultar</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;clicked&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_consulta_clicked</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btnMostrar</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="s2">&quot;Mostrar Todos&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btnMostrar</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;clicked&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_mostrar_click</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btnInforme</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="s2">&quot;Crear Factura&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btnInforme</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;clicked&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">on_factura</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lblCodBarrasPeliculas</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lsCodBarrasPeliculas</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">btnConsultar</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">btnMostrar</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">btnInforme</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">matricula_pieza</span><span class="p">()</span>
+
+        <span class="c1">##Tabla Clientes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">columnas</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Codigo de Barras&quot;</span><span class="p">,</span> <span class="s2">&quot;CodBarras Socio&quot;</span><span class="p">,</span> <span class="s2">&quot;Nombre&quot;</span><span class="p">,</span> <span class="s2">&quot;Precio&quot;</span><span class="p">,</span> <span class="s2">&quot;Tipo&quot;</span><span class="p">,</span> <span class="s2">&quot;Procedencia&quot;</span><span class="p">,</span>
+                         <span class="s2">&quot;Año Publicacion&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">modelo</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">ListStore</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">axenda</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vista</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">TreeView</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">modelo</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">columnas</span><span class="p">)):</span>
+            <span class="n">celda</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">CellRendererText</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">columna</span> <span class="o">=</span> <span class="n">Gtk</span><span class="o">.</span><span class="n">TreeViewColumn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">columnas</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">celda</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">i</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">vista</span><span class="o">.</span><span class="n">append_column</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">columna</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cajaVentana</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vista</span><span class="p">)</span>
+
+<div class="viewcode-block" id="TablaServicios.on_factura"><a class="viewcode-back" href="../videoclub.html#FormularioInicio.TablaServicios.on_factura">[documentos]</a>    <span class="k">def</span> <span class="nf">on_factura</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">btnIn</span><span class="p">):</span>
+        <span class="n">tiendaRe</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;VideoclubDB.dat&quot;</span><span class="p">)</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="n">tiendaRe</span>
+        <span class="n">resultCli</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+            <span class="s2">&quot;select * from Socios where CodBarras=&#39;&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">lsCodBarrasPeliculas</span><span class="o">.</span><span class="n">get_active_text</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;&#39;&quot;</span><span class="p">)</span>
+        <span class="n">lista</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">elemento</span> <span class="ow">in</span> <span class="n">resultCli</span><span class="p">:</span>
+            <span class="n">lista</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">elemento</span><span class="p">)</span>
+
+        <span class="n">resultPro</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+            <span class="s2">&quot;select * from Productos where CodBarrasPeliculas=&#39;&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">lsCodBarrasPeliculas</span><span class="o">.</span><span class="n">get_active_text</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;&#39;&quot;</span><span class="p">)</span>
+
+        <span class="n">listaP</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">elementos</span> <span class="ow">in</span> <span class="n">resultPro</span><span class="p">:</span>
+            <span class="n">listaP</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">elementos</span><span class="p">)</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">InformeFactura</span><span class="o">.</span><span class="n">informeFactura</span><span class="p">(</span><span class="n">lista</span><span class="p">,</span> <span class="n">listaP</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TablaServicios.matricula_pieza"><a class="viewcode-back" href="../videoclub.html#FormularioInicio.TablaServicios.matricula_pieza">[documentos]</a>    <span class="k">def</span> <span class="nf">matricula_pieza</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Lista los codbarras vinculados en el primer formulario para poder consultar despues por el combobox</span>
+<span class="sd">        :return: nothing</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tiendaC</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;VideoclubDB.dat&quot;</span><span class="p">)</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="n">tiendaC</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+
+            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select CodBarras from Socios&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">rexistro</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">lsCodBarrasPeliculas</span><span class="o">.</span><span class="n">append_text</span><span class="p">(</span><span class="n">rexistro</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">tiendaC</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="TablaServicios.on_consulta_clicked"><a class="viewcode-back" href="../videoclub.html#FormularioInicio.TablaServicios.on_consulta_clicked">[documentos]</a>    <span class="k">def</span> <span class="nf">on_consulta_clicked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">btnConsu</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Consultar gracias al combobox visualiza productos segun la codbarras selecionada.</span>
+<span class="sd">        :param btnConsu:</span>
+<span class="sd">        :return: nothing</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">tiendaC</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;VideoclubDB.dat&quot;</span><span class="p">)</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="n">tiendaC</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                <span class="s2">&quot;select * from Productos WHERE CodBarrasPeliculas=&#39;&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">lsCodBarrasPeliculas</span><span class="o">.</span><span class="n">get_active_text</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;&#39;&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">axenda</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+            <span class="k">for</span> <span class="n">rexistro</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">axenda</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="p">[</span><span class="n">rexistro</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">rexistro</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">rexistro</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">rexistro</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">rexistro</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">rexistro</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span> <span class="n">rexistro</span><span class="p">[</span><span class="mi">6</span><span class="p">]])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">modelo</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">elemento</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">axenda</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">modelo</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">elemento</span><span class="p">)</span>
+
+
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">tiendaC</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="TablaServicios.on_mostrar_click"><a class="viewcode-back" href="../videoclub.html#FormularioInicio.TablaServicios.on_mostrar_click">[documentos]</a>    <span class="k">def</span> <span class="nf">on_mostrar_click</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">btMostrar</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Muestra todos los productos de la base de datos</span>
+<span class="sd">        :param btMostrar:</span>
+<span class="sd">        :return: nothing</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">columnas</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="n">tiendaC</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;VideoclubDB.dat&quot;</span><span class="p">)</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="n">tiendaC</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from Productos&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">axenda</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">rexistro</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">axenda</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="p">[</span><span class="n">rexistro</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">rexistro</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">rexistro</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">rexistro</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">rexistro</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">rexistro</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span> <span class="n">rexistro</span><span class="p">[</span><span class="mi">6</span><span class="p">]])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">modelo</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">elemento</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">axenda</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">modelo</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">elemento</span><span class="p">)</span>
+
+
+
+
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">tiendaC</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">form</span> <span class="o">=</span> <span class="n">FormularioInicio</span><span class="p">()</span>
+    <span class="n">Gtk</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">VideoClub Los Martínez</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navegación</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../videoclub.html">InformeClientes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../videoclub.html#formularioinicio">FormularioInicio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../videoclub.html#informefacturas">InformeFacturas</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Código de módulo</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Búsqueda rápida</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Ir a" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Juan Martínez.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
