@@ -15,7 +15,7 @@ En el primer frame tenemos las opciones de insertar cliente, con todos los datos
   
 En la segunda interfaz tenemos la posibilidad de mostrar los datos de la DB en la tabla y emitir facturas
 
-![Interfaz socio_mostrar](https://i.imgur.com/FwTS9N5.png)
+ ![Interfaz socio_mostrar](https://i.imgur.com/FwTS9N5.png)
 
 Gestión de Productos/Servicios tiene también dos frames y 1 botón aparte que tiene como función abrir otro formulario el cual da la opción de mostrar todos los dvd/bluray/videojuego o consultar por la cod del socio, con la matricula selecionada en el combobox podemos realizar una factura sobre el socio vinculado a ese codigo que nos sacara la factura en un informe. En el primer frame tenemos las opciones de insertar producto, con todos los datos necesarios además de impedir que se meta un codbarras no registrada en socios y el boton que lo inserta en la base. 
 
